@@ -1,0 +1,17 @@
+albumentations==1.3.0
+datasets==2.9.0
+matplotlib==3.6.3
+numpy==1.24.2
+opencv-contrib-python==4.7.0.68
+opencv-python==4.7.0.68
+pandas==1.5.3
+pillow==9.4.0
+pre-commit==3.0.4
+pycodestyle==2.10.0
+python_box==7.0.1
+seaborn==0.12.2
+sklearn==0.0.post1
+tensorboard-plugin-profile==2.11.1
+tensorflow==2.11.0; platform_system == "Windows"
+tensorflow-macos==2.11.0; platform_system == "Darwin"
+tf-explain==0.3.1
