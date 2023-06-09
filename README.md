@@ -9,7 +9,7 @@ Instructions
 
 Solution
 ------------
-Since we don't have a time to reannotate the data, I'm proposing a novel deep learning based unsupervised learning method to train a classifier. Idea is to train an autoencoder model which tries to create exact same images from given images (image-to-image translation) and we can use embedding layer to extract the latent features from an image. Once we have achieved that we can use traditional KMeans clustering algorithm to create N (4 for our case because we have 4 distinct classes) clusters and group them into clusters based on the similarity of extracted embeddings from autoencoder. However, we can achieve better results by using similar approach in deep learning fashion where we create clustering layer to do the same job as KMeans.
+Novel deep learning based unsupervised learning method to train a classifier. Idea is to train an autoencoder model which tries to create exact same images from given images (image-to-image translation) and we can use embedding layer to extract the latent features from an image. Once we have achieved that we can use traditional KMeans clustering algorithm to create N (4 for our case because we have 4 distinct classes) clusters and group them into clusters based on the similarity of extracted embeddings from autoencoder. However, we can achieve better results by using similar approach in deep learning fashion where we create clustering layer to do the same job as KMeans.
 
 Workflow
 ------------
