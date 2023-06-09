@@ -1,18 +1,38 @@
-BD Computer Vision
+
+Deep Clustering Network
 ==============================
 
 Instructions
 ------------
-1. Clone the repo.
-2. *Optional:* Run `make virtualenv` to create a python virtual environment. Skip if using conda or some other env manager.
-    1. Run `source env/bin/activate` to activate the virtualenv.
-3. Install [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli).
-4. Run `make install-requirements` to install required python packages.
-5. Run `make pre-commit-install` to install pre-commit hooks.
-6. Run `python3 -m pip install .` to install cv_utils (utility scripts). Must run in root folder where *setup.py* is located
-6. To create a new project, run `make create` and follow onscreen instructions.
-7. To Configure SSH connection to Azure Repo, run `make configure-ssh` and follow on screen instructions. (Must required to run DVC)
-8. *Optional:* Run `git add-connection` to add azure connection string to DVC config file, should run it manually after each push.
+1. Run `pip install -r requirements.txt` to install required python packages (Requires Python > 3.10)
+2. Run `python src/run.py ` to train and test the model (Must run from root project folder where *README.md* is located)
+
+Solution
+------------
+Since we don't have a time to reannotate the data, I'm proposing a novel deep learning based unsupervised learning method to train a classifier. Idea is to train an autoencoder model which tries to create exact same images from given images (image-to-image translation) and we can use embedding layer to extract the latent features from an image. Once we have achieved that we can use traditional KMeans clustering algorithm to create N (4 for our case because we have 4 distinct classes) clusters and group them into clusters based on the similarity of extracted embeddings from autoencoder. However, we can achieve better results by using similar approach in deep learning fashion where we create clustering layer to do the same job as KMeans.
+
+Workflow
+------------
+                            Resize image to 160 x 160 and convert it to grayscale
+                                                    |
+        Train autoencoder (image-to-image translation where input image and output image is the same, idea is to
+        learn latent features from an image)
+                                                    |
+                        Use encoder to extract features from an image (returns fixed size embeddings)
+                                                    |
+                        create N cluster and initialize with them random centroid
+                                                    |
+                        soft placement of given sample to corresponding cluster based on similarity
+                            (Student`s t-distribution is used as a kernel to measure the
+                             similarity between embedded point and centroid.)
+                             NOTE: similarity can be interpreted as the probability
+                                    of assigning sample i to cluster j
+                                                    |
+                            compute auxiliary target distribution from soft placement
+                                                    |
+                compute KL divergence loss between the soft assignments and the auxiliary distribution
+                                                    |
+                            update model parameters and cluster centroid from computed loss
 
 
 Project Organization
@@ -20,53 +40,29 @@ Project Organization
 
     ├── LICENSE
     │
-    ├── Makefile           <- Makefile with commands like `make install-requirements` or `make clean`
+    ├── README.md                         <- The top-level README for developers using this project.
     │
-    ├── README.md          <- The top-level README for developers using this project.
-    │  
-    ├── research  
-    │   ├── image-classification
-    │   │   └── project
-    │   │       ├── .dvc  
-    │   │       │   └── config         <- DVC configuration files
-    │   │       │
-    │   │       ├── data
-    │   │       │   ├── processed      <- The final, canonical data sets for modeling.
-    │   │       │   └── raw            <- The original, immutable data dump.
-    │   │       │
-    │   │       ├── models
-    │   │       │   └── model.h5       <- Saved model file.
-    │   │       │
-    │   │       ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   │       │   └── figures        <- Generated graphics and figures to be used in reporting
-    │   │       │   └── metrics.txt    <- Relevant metrics after evaluating the model.
-    │   │       │   └── training_metrics.txt    <- Relevant metrics from training the model.
-    │   │       │
-    │   │       ├── src
-    │   │       │   └── train.py       <- Model training script
-    │   │       │   └── test.py        <- Model testing script
-    │   │       │
-    │   │       ├── dvc.lock           <- constructs the ML pipeline with defined stages.
-    │   │       └── dvc.yaml           <- Training a model on the processed data.
-    │   │
-    │   ├── object-detection
-    │   │   └── project                <- same directory structure as image-classification
-    │   │
-    │   └── computer-vision
-    │       ├── project1
-    │       └── project2
+    ├── datasets
+    │    ├── reference                    <- reference images to infer class mappings
+    │    ├── test                         <- test dataset
+    │    └── train                        <- train dataset
     │
-    ├── cv_utils              <- global shareable python utility scripts  
+    ├── reports
+    │    ├── train
+    │    │    ├── autoencoder_log.csv     <- training log 
+    │    │    ├── model.h5                <- saved model files
+    │    │    └── class_mappings.json     <- id to class mappings in JSON format
+    │    │
+    │    └── test
+    │         └── test_cm.png             <- confusion matrix for test data
     │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
+    ├── src
+    │    ├── data_loader.py               <- huggingface's datasets based data loader
+    │    ├── model.py                     <- Model definition and helper functions to build a model
+    │    ├── parameters.py                <- Class containing base parameters and hyper-parameters for training/testing
+    │    ├── run.py                       <- Helper class to train/test/predict on model
+    │    └── utils                        <- Utility script for augmentation and to create confusion matrix  
     │
-    ├── .scripts           <- Contains bash helper scripts
-    │
-    ├── .github            <- Contains github actions configuration
-    │
-    ├── .vscode            <- vscode linter settings
-    │
-    ├── .pre-commit-config.yaml  <- pre-commit hooks file with selected hooks for the projects.
-    │
-    └── setup.py           <- makes cv_utils pip installable (pip install -e .) so cv_utils can be imported anywhere within python environment.  
+    └── requirements.txt                  <- The requirements file for reproducing the analysis environment, e.g.
+                                             generated with `pip freeze > requirements.txt`
+     
